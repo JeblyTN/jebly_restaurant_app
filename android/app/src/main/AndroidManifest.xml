@@ -34,7 +34,7 @@
     </queries>
 
     <application
-        android:label="restaurant"
+        android:label="Jebly Restaurant"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:replace="android:label"
@@ -69,7 +69,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY_HERE" />
+            android:value="AIzaSyCLIBc_g8mIm6bfwvu1jzNZA0l1S5fPI0k" />
 
         <service
             android:name="com.dexterous.flutterlocalnotifications.ForegroundService"

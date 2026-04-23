@@ -1,4 +1,4 @@
-package com.foodies.restaurant.android
+package com.jebly.restaurant
 
 import android.content.ContentValues
 import android.graphics.Bitmap

@@ -9,7 +9,7 @@ import Photos
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("AIzaSyCfhx7ahLorEsPqplRnSTfhDbc47yW9c_4")
+    GMSServices.provideAPIKey("AIzaSyCLIBc_g8mIm6bfwvu1jzNZA0l1S5fPI0k")
     GeneratedPluginRegistrant.register(with: self)
         let controller = window?.rootViewController as! FlutterViewController
             let channel = FlutterMethodChannel(name: "image_saver", binaryMessenger: controller.binaryMessenger)

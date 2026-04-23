@@ -40,7 +40,7 @@ class Constant {
 
   static UserModel? userModel;
   static EmployeeRoleModel? employeeRoleModel;
-  static const globalUrl = "https://foodie.siswebapp.com/";
+  static const globalUrl = "https://admin.jebly.tn/";
   static const commissionSubscriptionID = "J0RwvxCWhZzQQD7Kc2Ll";
 
   static bool isZoneAvailable = false;
