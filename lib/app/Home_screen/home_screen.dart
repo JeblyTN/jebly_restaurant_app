@@ -82,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Welcome to Foodie Restaurant".tr,
+                                "Welcome to Jebly Restaurant".tr,
                                 style: TextStyle(color: AppThemeData.grey50, fontSize: 12, fontFamily: AppThemeData.regular),
                               ),
                               Text(
@@ -459,7 +459,7 @@ class HomeScreen extends StatelessWidget {
         totalRejectAmount = totalAmount + platformFee + platformTaxAmount + driverDeliveryTaxAmount + (orderModel.isFreeDelivery == false ? deliveryCharges + deliveryTips : 0);
       }
     }
-    log("orderModel.adminCommission :: ${orderModel.adminCommission} :: ${orderModel.adminCommissionType} :: ${totalAmount}");
+    log("orderModel.adminCommission :: ${orderModel.adminCommission} :: ${orderModel.adminCommissionType} :: $totalAmount");
     if (orderModel.adminCommissionType == 'Percent') {
       double basePrice = ((totalAmount) * (double.parse(orderModel.adminCommission!)) / 100);
       adminCommission = basePrice;

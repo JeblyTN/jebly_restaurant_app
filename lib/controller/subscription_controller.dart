@@ -132,7 +132,7 @@ class SubscriptionController extends GetxController {
         walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
         if (stripeModel.value.isEnabled == true) {
           Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
-          Stripe.merchantIdentifier = 'Foodie Restaurant'.tr;
+          Stripe.merchantIdentifier = 'Jebly Restaurant'.tr;
           Stripe.instance.applySettings();
         }
         setRef();
@@ -202,7 +202,7 @@ class SubscriptionController extends GetxController {
                     primary: AppThemeData.secondary300,
                   ),
                 ),
-                merchantDisplayName: 'Foodie'));
+                merchantDisplayName: 'Jebly'));
         displayStripePaymentSheet(amount: amount);
       }
     } catch (e, s) {
@@ -544,7 +544,7 @@ class SubscriptionController extends GetxController {
     var options = {
       'key': razorPayModel.value.razorpayKey,
       'amount': amount * 100,
-      'name': 'Foodie',
+      'name': 'Jebly',
       'order_id': orderId,
       "currency": "INR",
       'description': 'wallet Topup',
