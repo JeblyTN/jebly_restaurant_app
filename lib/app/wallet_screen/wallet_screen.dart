@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:restaurant/app/Home_screen/order_details_screen.dart';
+import 'package:restaurant/constant/collection_name.dart';
 import 'package:restaurant/constant/constant.dart';
 import 'package:restaurant/constant/show_toast_dialog.dart';
 import 'package:restaurant/controller/wallet_controller.dart';
+import 'package:restaurant/models/user_model.dart';
 import 'package:restaurant/models/wallet_transaction_model.dart';
 import 'package:restaurant/models/withdrawal_model.dart';
 import 'package:restaurant/themes/app_them_data.dart';
@@ -206,7 +209,7 @@ class WalletScreen extends StatelessWidget {
                       ),
                       Expanded(
                         child: DefaultTabController(
-                          length: 2,
+                          length: 3,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -217,6 +220,8 @@ class WalletScreen extends StatelessWidget {
                                     controller.selectedTabIndex.value = value;
                                   },
                                   padding: EdgeInsets.zero,
+                                  isScrollable: true,
+                                  tabAlignment: TabAlignment.start,
                                   labelStyle: TextStyle(fontFamily: AppThemeData.semiBold, color: AppThemeData.grey50),
                                   labelColor: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey700,
                                   unselectedLabelStyle: const TextStyle(fontFamily: AppThemeData.medium),
@@ -224,12 +229,9 @@ class WalletScreen extends StatelessWidget {
                                   indicatorColor: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey700,
                                   dividerColor: Colors.transparent,
                                   tabs: [
-                                    Tab(
-                                      text: "Transaction History".tr,
-                                    ),
-                                    Tab(
-                                      text: "Withdrawal History".tr,
-                                    ),
+                                    Tab(text: "Transaction History".tr),
+                                    Tab(text: "Withdrawal History".tr),
+                                    Tab(text: "Earnings".tr),
                                   ],
                                 ),
                               ),
@@ -298,6 +300,7 @@ class WalletScreen extends StatelessWidget {
                                               ),
                                             ),
                                           ),
+                                    _buildEarningsTab(context, controller, themeChange),
                                   ],
                                 ),
                               )
@@ -825,6 +828,375 @@ class WalletScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEarningsTab(BuildContext context, WalletController controller, DarkThemeProvider themeChange) {
+    final vendorId = Constant.userModel?.vendorID ?? '';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          StreamBuilder<DocumentSnapshot>(
+            stream: FireStoreUtils.fireStore.collection(CollectionName.vendors).doc(vendorId).snapshots(),
+            builder: (context, snapshot) {
+              final data = snapshot.data?.data() as Map<String, dynamic>?;
+              final double weeklyAccrual = (data?['weeklyAccrual'] ?? 0).toDouble();
+              final int weeklyOrderCount = (data?['weeklyOrderCount'] ?? 0).toInt();
+              final double lastPayoutAmount = (data?['lastPayoutAmount'] ?? 0).toDouble();
+              final Timestamp? lastPayoutAt = data?['lastPayoutAt'] as Timestamp?;
+              final double totalEarnings = (data?['totalEarnings'] ?? 0).toDouble();
+
+              return Column(
+                children: [
+                  _earningCard(
+                    title: 'Weekly Earnings'.tr,
+                    icon: Icons.trending_up,
+                    color: AppThemeData.success400,
+                    amount: weeklyAccrual,
+                    subtitle: '$weeklyOrderCount ${'Orders'.tr}',
+                    themeChange: themeChange,
+                  ),
+                  const SizedBox(height: 12),
+                  _earningCard(
+                    title: 'Last Payout'.tr,
+                    icon: Icons.payments_outlined,
+                    color: AppThemeData.info300,
+                    amount: lastPayoutAmount,
+                    subtitle: lastPayoutAt != null
+                        ? DateFormat('dd/MM/yyyy').format(lastPayoutAt.toDate())
+                        : 'No payout yet'.tr,
+                    themeChange: themeChange,
+                  ),
+                  const SizedBox(height: 12),
+                  _earningCard(
+                    title: 'Total Earnings'.tr,
+                    icon: Icons.account_balance_wallet_outlined,
+                    color: AppThemeData.secondary300,
+                    amount: totalEarnings,
+                    themeChange: themeChange,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildBankDetailsHeader(context, controller, themeChange),
+          const SizedBox(height: 20),
+          Text(
+            'Payout History'.tr,
+            style: TextStyle(
+              fontFamily: AppThemeData.semiBold,
+              fontSize: 16,
+              color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          FutureBuilder<QuerySnapshot>(
+            future: FireStoreUtils.fireStore
+                .collection('weeklyPayouts')
+                .where('restaurantId', isEqualTo: vendorId)
+                .get(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+              }
+              final docs = List<QueryDocumentSnapshot>.from(snapshot.data?.docs ?? []);
+              if (docs.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'No payout history'.tr,
+                      style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey400 : AppThemeData.grey600),
+                    ),
+                  ),
+                );
+              }
+              docs.sort((a, b) {
+                final aTs = (a.data() as Map<String, dynamic>)['periodStart'] as Timestamp?;
+                final bTs = (b.data() as Map<String, dynamic>)['periodStart'] as Timestamp?;
+                if (aTs == null || bTs == null) return 0;
+                return bTs.compareTo(aTs);
+              });
+              return Container(
+                decoration: ShapeDecoration(
+                  color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(8),
+                  itemCount: docs.length,
+                  separatorBuilder: (_, __) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: MySeparator(color: themeChange.getThem() ? AppThemeData.grey700 : AppThemeData.grey200),
+                  ),
+                  itemBuilder: (context, index) {
+                    final d = docs[index].data() as Map<String, dynamic>;
+                    final double amount = (d['amount'] ?? 0).toDouble();
+                    final String status = d['status'] ?? 'pending';
+                    final Timestamp? periodStart = d['periodStart'] as Timestamp?;
+                    final Timestamp? periodEnd = d['periodEnd'] as Timestamp?;
+                    final String period = (periodStart != null && periodEnd != null)
+                        ? '${DateFormat('dd/MM').format(periodStart.toDate())} – ${DateFormat('dd/MM/yyyy').format(periodEnd.toDate())}'
+                        : '';
+                    final Color statusColor = status == 'paid'
+                        ? AppThemeData.success400
+                        : status == 'on_hold'
+                            ? AppThemeData.warning300
+                            : AppThemeData.secondary300;
+                    final String statusLabel = status == 'paid'
+                        ? 'Paid'.tr
+                        : status == 'on_hold'
+                            ? 'On Hold'.tr
+                            : 'Pending'.tr;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  Constant.amountShow(amount: amount.toString()),
+                                  style: TextStyle(
+                                    fontFamily: AppThemeData.semiBold,
+                                    fontSize: 16,
+                                    color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                                  ),
+                                ),
+                                if (period.isNotEmpty)
+                                  Text(
+                                    period,
+                                    style: TextStyle(
+                                      fontFamily: AppThemeData.regular,
+                                      fontSize: 12,
+                                      color: themeChange.getThem() ? AppThemeData.grey400 : AppThemeData.grey600,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              statusLabel,
+                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 12, color: statusColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _earningCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required double amount,
+    String? subtitle,
+    required DarkThemeProvider themeChange,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: AppThemeData.regular,
+                    fontSize: 13,
+                    color: themeChange.getThem() ? AppThemeData.grey400 : AppThemeData.grey600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  Constant.amountShow(amount: amount.toString()),
+                  style: TextStyle(
+                    fontFamily: AppThemeData.bold,
+                    fontSize: 18,
+                    color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                  ),
+                ),
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontFamily: AppThemeData.regular, fontSize: 12, color: color),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBankDetailsHeader(BuildContext context, WalletController controller, DarkThemeProvider themeChange) {
+    final bankDetails = Constant.userModel?.userBankDetails;
+
+    return GestureDetector(
+      onTap: () => _bankDetailsBottomSheet(context, controller, themeChange),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: themeChange.getThem() ? AppThemeData.grey700 : AppThemeData.grey200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppThemeData.info300.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.account_balance_outlined, color: AppThemeData.info300, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bank Details'.tr,
+                    style: TextStyle(
+                      fontFamily: AppThemeData.semiBold,
+                      fontSize: 15,
+                      color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                    ),
+                  ),
+                  if (bankDetails != null && bankDetails.accountNumber.isNotEmpty)
+                    Text(
+                      '${bankDetails.bankName} • ${bankDetails.accountNumber}',
+                      style: TextStyle(
+                        fontFamily: AppThemeData.regular,
+                        fontSize: 12,
+                        color: themeChange.getThem() ? AppThemeData.grey400 : AppThemeData.grey600,
+                      ),
+                    )
+                  else
+                    Text(
+                      'Tap to add bank details'.tr,
+                      style: const TextStyle(fontFamily: AppThemeData.regular, fontSize: 12, color: AppThemeData.info300),
+                    ),
+                ],
+              ),
+            ),
+            const Icon(Icons.edit_outlined, color: AppThemeData.info300, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _bankDetailsBottomSheet(BuildContext context, WalletController controller, DarkThemeProvider themeChange) async {
+    final bankNameCtrl = TextEditingController(text: Constant.userModel?.userBankDetails?.bankName ?? '');
+    final ribCtrl = TextEditingController(text: Constant.userModel?.userBankDetails?.accountNumber ?? '');
+    final holderCtrl = TextEditingController(text: Constant.userModel?.userBankDetails?.holderName ?? '');
+    final branchCtrl = TextEditingController(text: Constant.userModel?.userBankDetails?.branchName ?? '');
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Bank Details'.tr,
+                      style: TextStyle(
+                        fontFamily: AppThemeData.semiBold,
+                        fontSize: 18,
+                        color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                      ),
+                    ),
+                  ),
+                  InkWell(splashColor: Colors.transparent, onTap: () => Get.back(), child: const Icon(Icons.close)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFieldWidget(title: 'Bank Name'.tr, controller: bankNameCtrl, hintText: 'Enter bank name'.tr),
+              const SizedBox(height: 8),
+              TextFieldWidget(title: 'RIB / Account Number'.tr, controller: ribCtrl, hintText: 'Enter RIB / account number'.tr),
+              const SizedBox(height: 8),
+              TextFieldWidget(title: 'Account Holder'.tr, controller: holderCtrl, hintText: 'Enter holder name'.tr),
+              const SizedBox(height: 8),
+              TextFieldWidget(title: 'Branch'.tr, controller: branchCtrl, hintText: 'Enter branch name'.tr),
+              const SizedBox(height: 16),
+              RoundedButtonFill(
+                title: 'Save'.tr,
+                color: AppThemeData.secondary300,
+                textColor: AppThemeData.grey50,
+                height: 5.5,
+                onPress: () async {
+                  ShowToastDialog.showLoader('Please wait'.tr);
+                  Constant.userModel!.userBankDetails = UserBankDetails(
+                    bankName: bankNameCtrl.text.trim(),
+                    accountNumber: ribCtrl.text.trim(),
+                    holderName: holderCtrl.text.trim(),
+                    branchName: branchCtrl.text.trim(),
+                    otherDetails: Constant.userModel?.userBankDetails?.otherDetails ?? '',
+                  );
+                  await FireStoreUtils.updateUser(Constant.userModel!);
+                  ShowToastDialog.closeLoader();
+                  Get.back();
+                  ShowToastDialog.showToast('Bank details saved'.tr);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
