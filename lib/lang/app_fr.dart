@@ -752,4 +752,5 @@ const Map<String, String> trFR = {
   "Earnings": "Gains",
   "On Hold": "En attente",
   "Tap to add bank details": "Appuyez pour ajouter vos coordonnées bancaires",
+  'Average Preparation Time (minutes)': 'Temps de préparation moyen (minutes)',
 };

@@ -769,4 +769,5 @@ const Map<String, String> enUS = {
   'Earnings': 'Earnings',
   'On Hold': 'On Hold',
   'Tap to add bank details': 'Tap to add bank details',
+  'Average Preparation Time (minutes)': 'Average Preparation Time (minutes)',
 };

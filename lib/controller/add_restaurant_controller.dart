@@ -33,6 +33,7 @@ class AddRestaurantController extends GetxController {
   Rx<TextEditingController> minDeliveryChargesWithinKMController = TextEditingController().obs;
 
   Rx<TextEditingController> packagingChargeAmountController = TextEditingController().obs;
+  Rx<TextEditingController> prepTimeMinutesController = TextEditingController().obs;
 
   LatLng? selectedLocation;
 
@@ -89,6 +90,7 @@ class AddRestaurantController extends GetxController {
               mobileNumberController.value.text = vendorModel.value.phonenumber.toString();
               addressController.value.text = vendorModel.value.location.toString();
               packagingChargeAmountController.value.text = vendorModel.value.packagingCharge != null ? vendorModel.value.packagingCharge.toString() : '0';
+              prepTimeMinutesController.value.text = (vendorModel.value.prepTimeMinutes ?? 15).toString();
               isSelfDelivery.value = vendorModel.value.isSelfDelivery ?? false;
               if (addressController.value.text.isNotEmpty) {
                 isAddressEnable.value = true;
@@ -209,6 +211,7 @@ class AddRestaurantController extends GetxController {
         vendorModel.value.zoneId = selectedZone.value.id;
         vendorModel.value.isSelfDelivery = isSelfDelivery.value;
         vendorModel.value.packagingCharge = packagingChargeAmountController.value.text.isNotEmpty ? packagingChargeAmountController.value.text : '0';
+        vendorModel.value.prepTimeMinutes = int.tryParse(prepTimeMinutesController.value.text) ?? 15;
 
         if ((Constant.adminCommission?.isEnabled == true || Constant.isSubscriptionModelApplied == true) && Constant.userModel?.role != Constant.userRoleEmployee) {
           vendorModel.value.subscriptionPlanId = userModel.value.subscriptionPlanId;

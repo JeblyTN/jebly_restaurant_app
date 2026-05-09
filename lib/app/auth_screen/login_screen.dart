@@ -247,43 +247,55 @@ class OwnerLoginForm extends StatelessWidget {
                 ],
               ),
             ),
-            RoundedButtonFill(
-              title: "Continue with Mobile Number".tr,
-              textColor: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey900,
-              color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey100,
-              icon: SvgPicture.asset(
-                "assets/icons/ic_phone.svg",
-                colorFilter: const ColorFilter.mode(AppThemeData.grey900, BlendMode.srcIn),
-              ),
-              isRight: false,
-              onPress: () => Get.to(const PhoneNumberScreen()),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: RoundedButtonFill(
-                    title: Platform.isIOS ? "with Google".tr : 'Continue with Google'.tr,
+            // [PHONE_AUTH_HIDDEN] Remove Offstage wrapper to re-enable phone login
+            Offstage(
+              offstage: true,
+              child: Column(
+                children: [
+                  RoundedButtonFill(
+                    title: "Continue with Mobile Number".tr,
                     textColor: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey900,
                     color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey100,
-                    icon: SvgPicture.asset("assets/icons/ic_google.svg"),
+                    icon: SvgPicture.asset(
+                      "assets/icons/ic_phone.svg",
+                      colorFilter: const ColorFilter.mode(AppThemeData.grey900, BlendMode.srcIn),
+                    ),
                     isRight: false,
-                    onPress: () => controller.loginWithGoogle(),
+                    onPress: () => Get.to(const PhoneNumberScreen()),
                   ),
-                ),
-                if (Platform.isIOS) const SizedBox(width: 10),
-                if (Platform.isIOS)
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            // [GOOGLE_AUTH_HIDDEN] Remove Offstage wrapper to re-enable Google/Apple login
+            Offstage(
+              offstage: true,
+              child: Row(
+                children: [
                   Expanded(
                     child: RoundedButtonFill(
-                      title: "with Apple".tr,
+                      title: Platform.isIOS ? "with Google".tr : 'Continue with Google'.tr,
                       textColor: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey900,
                       color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey100,
-                      icon: SvgPicture.asset("assets/icons/ic_apple.svg"),
+                      icon: SvgPicture.asset("assets/icons/ic_google.svg"),
                       isRight: false,
-                      onPress: () => controller.loginWithApple(),
+                      onPress: () => controller.loginWithGoogle(),
                     ),
                   ),
-              ],
+                  if (Platform.isIOS) const SizedBox(width: 10),
+                  if (Platform.isIOS)
+                    Expanded(
+                      child: RoundedButtonFill(
+                        title: "with Apple".tr,
+                        textColor: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey900,
+                        color: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey100,
+                        icon: SvgPicture.asset("assets/icons/ic_apple.svg"),
+                        isRight: false,
+                        onPress: () => controller.loginWithApple(),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
