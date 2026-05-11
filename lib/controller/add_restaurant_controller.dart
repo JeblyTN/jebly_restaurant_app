@@ -161,11 +161,14 @@ class AddRestaurantController extends GetxController {
       if (Constant.isPointInPolygon(selectedLocation!, selectedZone.value.area!)) {
         ShowToastDialog.showLoader("Please wait".tr);
         filter();
+        final num perKm = num.tryParse(chargePerKmController.value.text) ?? 0;
+        final num minCharge = num.tryParse(minDeliveryChargesController.value.text) ?? 0;
+        final num minWithinKm = num.tryParse(minDeliveryChargesWithinKMController.value.text) ?? 0;
         DeliveryCharge deliveryChargeModel = DeliveryCharge(
             vendorCanModify: true,
-            deliveryChargesPerKm: num.parse(chargePerKmController.value.text),
-            minimumDeliveryCharges: num.parse(minDeliveryChargesController.value.text),
-            minimumDeliveryChargesWithinKm: num.parse(minDeliveryChargesWithinKMController.value.text));
+            deliveryChargesPerKm: perKm > 0 ? perKm : (this.deliveryChargeModel.value.deliveryChargesPerKm ?? 1),
+            minimumDeliveryCharges: minCharge > 0 ? minCharge : (this.deliveryChargeModel.value.minimumDeliveryCharges ?? 1),
+            minimumDeliveryChargesWithinKm: minWithinKm > 0 ? minWithinKm : (this.deliveryChargeModel.value.minimumDeliveryChargesWithinKm ?? 1));
 
         if (vendorModel.value.id == null) {
           vendorModel.value = VendorModel();
