@@ -752,62 +752,63 @@ class OrderDetailsController extends GetxController {
         width: 1, // Spacer column
       ),
     ]);
-    bytes += generator.row([
-      PosColumn(
-          text: 'Delivery Charge:'.tr,
-          width: 5,
-          styles: const PosStyles(
-            align: PosAlign.left,
-            height: PosTextSize.size1,
-            width: PosTextSize.size1,
-          )),
-      PosColumn(
-        text: '',
-        width: 1, // Spacer column
-      ),
-      PosColumn(
-          text: orderModel.value.isFreeDelivery == true
-              ? 'Free'
-              : orderModel.value.deliveryCharge == null
-                  ? "0.0"
-                  : double.parse(orderModel.value.deliveryCharge.toString()).toString(),
-          width: 5,
-          styles: const PosStyles(
-            align: PosAlign.right,
-            height: PosTextSize.size1,
-            width: PosTextSize.size1,
-          )),
-      PosColumn(
-        text: '',
-        width: 1, // Spacer column
-      ),
-    ]);
-    bytes += generator.row([
-      PosColumn(
-          text: 'Delivery Man Tip:'.tr,
-          width: 5,
-          styles: const PosStyles(
-            align: PosAlign.left,
-            height: PosTextSize.size1,
-            width: PosTextSize.size1,
-          )),
-      PosColumn(
-        text: '',
-        width: 1, // Spacer column
-      ),
-      PosColumn(
-          text: orderModel.value.tipAmount!.isEmpty ? "0.0" : orderModel.value.tipAmount!,
-          width: 5,
-          styles: const PosStyles(
-            align: PosAlign.right,
-            height: PosTextSize.size1,
-            width: PosTextSize.size1,
-          )),
-      PosColumn(
-        text: '',
-        width: 1, // Spacer column
-      ),
-    ]);
+    // Delivery Charge and Delivery Man Tip hidden from restaurant receipt
+    // bytes += generator.row([
+    //   PosColumn(
+    //       text: 'Delivery Charge:'.tr,
+    //       width: 5,
+    //       styles: const PosStyles(
+    //         align: PosAlign.left,
+    //         height: PosTextSize.size1,
+    //         width: PosTextSize.size1,
+    //       )),
+    //   PosColumn(
+    //     text: '',
+    //     width: 1,
+    //   ),
+    //   PosColumn(
+    //       text: orderModel.value.isFreeDelivery == true
+    //           ? 'Free'
+    //           : orderModel.value.deliveryCharge == null
+    //               ? "0.0"
+    //               : double.parse(orderModel.value.deliveryCharge.toString()).toString(),
+    //       width: 5,
+    //       styles: const PosStyles(
+    //         align: PosAlign.right,
+    //         height: PosTextSize.size1,
+    //         width: PosTextSize.size1,
+    //       )),
+    //   PosColumn(
+    //     text: '',
+    //     width: 1,
+    //   ),
+    // ]);
+    // bytes += generator.row([
+    //   PosColumn(
+    //       text: 'Delivery Man Tip:'.tr,
+    //       width: 5,
+    //       styles: const PosStyles(
+    //         align: PosAlign.left,
+    //         height: PosTextSize.size1,
+    //         width: PosTextSize.size1,
+    //       )),
+    //   PosColumn(
+    //     text: '',
+    //     width: 1,
+    //   ),
+    //   PosColumn(
+    //       text: orderModel.value.tipAmount!.isEmpty ? "0.0" : orderModel.value.tipAmount!,
+    //       width: 5,
+    //       styles: const PosStyles(
+    //         align: PosAlign.right,
+    //         height: PosTextSize.size1,
+    //         width: PosTextSize.size1,
+    //       )),
+    //   PosColumn(
+    //     text: '',
+    //     width: 1,
+    //   ),
+    // ]);
     generator.text(' ' * spaceBetweenColumns1, styles: const PosStyles());
     bytes += generator.hr(ch: '-', len: 32);
     generator.text(' ' * spaceBetweenColumns1, styles: const PosStyles());
