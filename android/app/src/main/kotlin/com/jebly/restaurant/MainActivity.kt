@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,6 +14,11 @@ import java.io.OutputStream
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "image_saver"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        super.onCreate(savedInstanceState)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
